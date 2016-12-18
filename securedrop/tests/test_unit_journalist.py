@@ -548,21 +548,22 @@ class TestJournalist(TestCase):
         self.assertEqual(rv.content_type, 'application/zip')
         self.assertTrue(zipfile.is_zipfile(StringIO(rv.data)))
 
-        for file in selected_files:
+        for index, filename in enumerate(selected_files, start=1):
             self.assertTrue(
+                # Check that the expected filename is in the zip file
                 zipfile.ZipFile(StringIO(rv.data)).getinfo(
                     os.path.join(
                         source.journalist_filename,
                         source.journalist_designation,
-                        "1_%s" % source.last_updated.date(),
-                        files[0],
+                        "%s_%s" % (index, source.last_updated.date()),
+                        filename,
                     ))
                 )
 
-        for file in unselected_files:
+        for filename in unselected_files:
             try:
                 zipfile.ZipFile(StringIO(rv.data)).getinfo(
-                    os.path.join(source.journalist_filename, file))
+                    os.path.join(source.journalist_filename, filename))
             except KeyError:
                 pass
             else:
@@ -625,10 +626,10 @@ class TestJournalist(TestCase):
                 ))
             )
 
-        for file in (self.files[0], self.files2[0]):
+        for filename in (self.files[0], self.files2[0]):
             try:
                 zipfile.ZipFile(StringIO(resp.data)).getinfo(
-                    os.path.join('unread', file))
+                    os.path.join('unread', filename))
             except KeyError:
                 pass
             else:
@@ -647,21 +648,21 @@ class TestJournalist(TestCase):
 
         source2 = journalist.get_source(self.sid2)
 
-        for i, file in enumerate(self.files2):
+        for index, filename in enumerate(self.files2, start=1):
             self.assertTrue(
                 zipfile.ZipFile(StringIO(resp.data)).getinfo(
                     os.path.join(
                         "all",
                         source2.journalist_designation,
-                        "%s_%s" % (i+1, source2.last_updated.date()),
-                        file
+                        "%s_%s" % (index, source2.last_updated.date()),
+                        filename
                     ))
                 )
 
-        for file in self.files:
+        for filename in self.files:
             try:
                 zipfile.ZipFile(StringIO(resp.data)).getinfo(
-                    os.path.join('all', file))
+                    os.path.join('all', filename))
             except KeyError:
                 pass
             else:
